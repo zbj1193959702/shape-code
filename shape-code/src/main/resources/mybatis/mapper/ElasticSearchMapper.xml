@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.biji.puppeteer.shapecode.dao.mapper.ElasticSearchMapper">
+
+    <resultMap id="esDataListMap" type="com.biji.puppeteer.shapecode.dao.model.ElasticSearchParams">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="pid" jdbcType="BIGINT" property="pid" />
+        <result column="weightid" jdbcType="INTEGER" property="weightid" />
+        <result column="count" jdbcType="BIGINT" property="count" />
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+        <result column="type" jdbcType="INTEGER" property="type" />
+        <result column="video" jdbcType="VARCHAR" property="video" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="cover" jdbcType="VARCHAR" property="cover" />
+        <result column="label" jdbcType="VARCHAR" property="label" />
+        <result column="skip" jdbcType="VARCHAR" property="skip" />
+        <result column="extend" jdbcType="VARCHAR" property="extend" />
+        <result column="file_url" jdbcType="VARCHAR" property="fileUrl" />
+        <result column="imgs" jdbcType="VARCHAR" property="imgs" />
+        <result column="title" jdbcType="VARCHAR" property="title" />
+        <result column="download_count" jdbcType="BIGINT" property="downloadCount" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="enName" jdbcType="VARCHAR" property="enName" />
+        <result column="subhead" jdbcType="VARCHAR" property="subhead" />
+        <result column="icon" jdbcType="VARCHAR" property="icon" />
+        <result column="uri" jdbcType="VARCHAR" property="uri" />
+    </resultMap>
+
+    <select id="getAllDataList" resultType="com.biji.puppeteer.shapecode.dao.model.ElasticSearchParams">
+        SELECT
+         a.id id,
+         a.pid pid,
+         a.weightid weightid,
+         a.count count,
+         a.add_time add_time,
+         a.type type,
+         a.video video,
+         a.content content,
+         a.cover cover,
+         a.label label,
+         a.skip skip,
+         a.extend extend,
+         a.file_url file_url,
+         a.imgs imgs,
+         a.title title,
+         a.download_count download_count,
+         m.name name,
+         m.en_name en_name,
+         m.subhead subhead,
+         m.icon icon,
+         m.uri uri
+         from t_mebay_articles a LEFT JOIN t_mebay_menu m on a.pid = m.id
+    </select>
+
+</mapper>
