@@ -1,12 +1,12 @@
 class Selector {
     constructor() {
-        this.loginUrl = 'http://hubeimiddle.joyuai.com/#/login';
-        this.loginSuccess = "http://hubeimiddle.joyuai.com/#/dashboard";
+        this.loginUrl = 'http://admin.youhubei.cn/#/login';
+        this.loginSuccess = "http://admin.youhubei.cn/#/dashboard";
         this.username = '#app > div > form > div:nth-child(2) > div > div > input';
         this.password = '#app > div > form > div:nth-child(3) > div > div > input';
         this.submitBtn = '#app > div > form > button';
 
-        this.customerSelect = 'http://hubeimiddle.joyuai.com/#/customerManage/customerInfo/customerSelect';
+        this.customerSelect = 'http://admin.youhubei.cn/#/customerManage/customerInfo/customerSelect';
         this.totalCount = '#app > div > div.main-container > section > div > div > div.el-pagination > span.el-pagination__total';
         this.row = {
            prefix : '#app > div > div.main-container > section > div > div > div.el-pagination > ul > li'

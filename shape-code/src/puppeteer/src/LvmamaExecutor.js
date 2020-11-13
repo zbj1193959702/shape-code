@@ -4,8 +4,8 @@ const Selector = require('./lvmama/Selector');
 
 async function main() {
     let account = {
-        username : 'hubeiyou',
-        password : '123456'
+        username : 'zhaobiji',
+        password : 'zhaobiji'
     };
     let selector = new Selector();
     const session = await new Session(account, selector, false);

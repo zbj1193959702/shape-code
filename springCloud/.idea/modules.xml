@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-01/microservice-cloud-01.iml" filepath="$PROJECT_DIR$/microservice-cloud-01/microservice-cloud-01.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-02-api/microservice-cloud-02-api.iml" filepath="$PROJECT_DIR$/microservice-cloud-02-api/microservice-cloud-02-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-03-provider-product-8001/microservice-cloud-03-provider-product-8001.iml" filepath="$PROJECT_DIR$/microservice-cloud-03-provider-product-8001/microservice-cloud-03-provider-product-8001.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-04-consumer-product-80/microservice-cloud-04-consumer-product-80.iml" filepath="$PROJECT_DIR$/microservice-cloud-04-consumer-product-80/microservice-cloud-04-consumer-product-80.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-05-eureka-6001/microservice-cloud-05-eureka-6001.iml" filepath="$PROJECT_DIR$/microservice-cloud-05-eureka-6001/microservice-cloud-05-eureka-6001.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-05-eureka-6002/microservice-cloud-05-eureka-6002.iml" filepath="$PROJECT_DIR$/microservice-cloud-05-eureka-6002/microservice-cloud-05-eureka-6002.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-06-provider-product-8002/microservice-cloud-06-provider-product-8002.iml" filepath="$PROJECT_DIR$/microservice-cloud-06-provider-product-8002/microservice-cloud-06-provider-product-8002.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-07-consumer-product-feign/microservice-cloud-07-consumer-product-feign.iml" filepath="$PROJECT_DIR$/microservice-cloud-07-consumer-product-feign/microservice-cloud-07-consumer-product-feign.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-08-provider-product-hystrix-8001/microservice-cloud-08-provider-product-hystrix-8001.iml" filepath="$PROJECT_DIR$/microservice-cloud-08-provider-product-hystrix-8001/microservice-cloud-08-provider-product-hystrix-8001.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-09-hystrix-dashboard-9001/microservice-cloud-09-hystrix-dashboard-9001.iml" filepath="$PROJECT_DIR$/microservice-cloud-09-hystrix-dashboard-9001/microservice-cloud-09-hystrix-dashboard-9001.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-10-zuul-gateway-7001/microservice-cloud-10-zuul-gateway-7001.iml" filepath="$PROJECT_DIR$/microservice-cloud-10-zuul-gateway-7001/microservice-cloud-10-zuul-gateway-7001.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-11-config-server-5001/microservice-cloud-11-config-server-5001.iml" filepath="$PROJECT_DIR$/microservice-cloud-11-config-server-5001/microservice-cloud-11-config-server-5001.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-12-config-client-8080/microservice-cloud-12-config-client-8080.iml" filepath="$PROJECT_DIR$/microservice-cloud-12-config-client-8080/microservice-cloud-12-config-client-8080.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-13-eureka-config-6001/microservice-cloud-13-eureka-config-6001.iml" filepath="$PROJECT_DIR$/microservice-cloud-13-eureka-config-6001/microservice-cloud-13-eureka-config-6001.iml" />
+      <module fileurl="file://$PROJECT_DIR$/microservice-cloud-14-product-config-8001/microservice-cloud-14-product-config-8001.iml" filepath="$PROJECT_DIR$/microservice-cloud-14-product-config-8001/microservice-cloud-14-product-config-8001.iml" />
+    </modules>
+  </component>
+</project>

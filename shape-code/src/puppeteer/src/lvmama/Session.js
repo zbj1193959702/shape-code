@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const CommSession = require('../platform/CommSession');
 const Util = require('../base/utils');
 const _static = require('../base/static');
+const Api = require('../base/api');
 
 class Session {
 
@@ -33,7 +34,7 @@ class Session {
             width: 1400,
             height: 1024
         });
-        await page.goto(selector.customerSelect, {waitUntil: 'domcontentloaded'});
+        await page.goto(selector.customerSelect, {waitUntil: 'networkidle0'});
         await page.waitFor(_static.threeT);
 
         let memberCountText = await CommSession.getText(page, selector.totalCount);
@@ -51,6 +52,7 @@ class Session {
                 }
                 let phone = await CommSession.getText(page, phoneSelect);
                 Util.tcLog(phone);
+                await Api.method.saveCustomer(phone);
             }
         }
     }
@@ -62,7 +64,7 @@ class Session {
             height: 1024
         });
 
-        await page.goto(this.selector.loginUrl, {waitUntil: 'domcontentloaded'});
+        await page.goto(this.selector.loginUrl, {waitUntil: 'networkidle0'});
         await CommSession.oneStepT(page, this.selector.username, this.username);
         await CommSession.oneStepT(page, this.selector.password, this.password);
         await CommSession.oneStepC(page, this.selector.submitBtn);

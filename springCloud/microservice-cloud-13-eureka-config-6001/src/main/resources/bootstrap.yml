@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      name: microservice-config-eureka  #github上的配置名称，注意没有yml后缀名
+      profile: dev #本次访问的环境配置项
+      label: master #远程库的分支名
+      uri: http://localhost:5001

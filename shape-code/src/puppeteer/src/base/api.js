@@ -27,7 +27,16 @@ const api = {
     storageTitle: _path.promotion + 'post/58/cangku/title.do?projectId=',
     productTitle: _path.promotion + 'post/58/changfang/title.do?projectId=',
     imageKnow: _path.promotion + 'post/recognize.do',
+    saveCustomer: _path.localhost + 'customer/save?phone=',
 };
+
+const saveCustomer = async function (phone) {
+    let res = await rp.get({uri: api.saveCustomer + phone});
+    if (util._obj.isEmpty(res) || res.code !== '0') {
+        return null
+    }
+    return res.data
+}
 
 /**
  * 发帖配置数据
@@ -267,6 +276,7 @@ module.exports = {
         drop,
         queryTask,
         monitor,
-        catPostTask
+        catPostTask,
+        saveCustomer,
     },
 };

@@ -1,0 +1,233 @@
+自动发帖(post-zgzs）
+
+    安装node.js
+    安装python
+
+package.json 目录下执行npm i
+若npm i 失败  （需安装visual studio）
+若启动提示浏览器安装失败则选择cnpm
+-- npm install -g cnpm --registry=https://registry.npm.taobao.org
+-- cnpm i
+-- cnpm install puppeteer
+针对cnpm i 不通过问题
+cnpm install --global --production windows-build-tools
+
+语法学习：
+    https://zhaoqize.github.io/puppeteer-api-zh_CN/
+
+系统内部账号管理界面：
+    http://123.clinks.com.cn/crm/postWorkbench
+表：
+    post_task
+    post_config
+    post_config_platform
+    post_plan
+    post_template
+    post_platform
+    post_promote_record
+
+验证码 ：
+    com.clinks.parkconverge.web.util.yzmUtil#yzmCode (工具类)
+    http://www.ttshitu.com/user/recharge.html        (破解平台)
+
+maven
+    公网IP： 47.100.136.104       端口 8641
+    adminuser: mvn6543^%$#QAZWSX
+
+    路径： /opt/post/task/post-zgzs/auto/src
+    启动： nohup node AsyncExecutor.js --remainder=0 --mod=2 &
+
+    [CAT Event告警: promotion-web post_task alarm]
+
+Online-Cms
+    139.224.74.137（公网）        端口 8641
+    root：,.^&*(ABCD6789pms
+
+    路径： /opt/post/post-zgzs/auto/src
+    启动： nohup node AsyncExecutor.js --remainder=1 --mod=2 &
+
+    [CAT Event告警: promotion-web post58 All]
+
+爬取上架的脚本：
+    启动一个就好了
+    路径：/opt/post/post-zgzs/auto/src/PromoteExecutor.js
+    启动：nohup node PromoteExecutor.js &
+
+启动前 ：
+    先kill进程 和 清理僵尸进程
+    eg:
+        - 查看进程：ps aux|grep AsyncExecutor.js
+        - 查看僵尸进程：pgrep chrome
+        - 清理僵尸进程：pkill chrome
+
+重新部署的时候注意权限以及文件夹是否存在问题（temp 图片路径）
+
+旧的发帖端口以及流量常用的脚本在项目post
+    post58
+    baixing
+    caigou
+    caigou_delete_photo
+    download_photo
+    liebiaowang
+
+    index.js / main.js
+
+全局搜索
+    com.clinks.site.controller.ProjectVipController#searchAll
+
+下拉框联想词
+    com.clinks.base.service.RampServiceImpl#lenovoWord
+    eg：
+            青浦厂房做快递
+
+            区域词                 DERIVE_KEYWORD(可扩展)
+        ------------------------------------------------
+            青浦               -           普通库  厂房
+            青浦工业园区        -
+
+             poi  (每次20个 处理带数字的)   https://lbs.amap.com/api/webservice/guide/api/search#limit
+        -----------------------------
+            上海市青浦区练塘镇芦潼路369号2号厂房
+            厂房上海恩灵精密机械有限公司
+                ...
+poi搜索
+    com.clinks.project.dl.daosolr.ProjectSolrDAO#poiSearch
+    字段 ：stationPosition(location_rpt) mock地址
+
+词的搜索
+    排序：
+    com.clinks.project.dl.util.ProjectSolrSortUtil#buildGlobalSort
+    eg:
+        -- 优选都命中的 其次命中次数多的
+        sum(if(gt(termfreq(keywordStr , 青浦) , 0) , 1, 0), if(gt(termfreq(keywordStr , 厂房) , 0) , 1, 0)) desc,
+        sum(termfreq(keywordStr , 青浦),termfreq(keywordStr , 厂房)) desc
+
+3d地图(clinks-vue)
+    高德文档：
+        https://lbs.amap.com/api/javascript-api/example/3d/3d-model
+    pms:
+        http://123.clinks.com.cn/crm/project3dMap/106948
+    clinks-vue ：
+        src/pages/pms/project/project3dMap.vue
+    主表:
+        project
+        building
+        rental_unit
+    实现：
+        以物业为单位、楼层分离
+    组成：
+        不封底的每一层的模型
+        四个竖线
+        封闭的边界线
+        重心的标记 (com.clinks.cms.controller.ProjectController#calculateCenter)
+
+洗客：
+    pms :
+        http://pms.clinks.com.cn/cms/contact/workBench.do
+    分配：
+        com.clinks.cms.service.ContactServiceImpl#distribution
+
+    USER_TASK
+        @com.clinks.usertask.enums.UserTaskType
+        @com.clinks.usertask.enums.UserTaskBusinessType
+
+    INSERT INTO USER_TASK (
+        contact_Id, BUSINESS_TYPE, BUSINESS_VALUE, STATUS, PUBLIC_STATUS,
+        TYPE, TITLE, ASSIGN_USER, ASSIGN_TIME, CREATE_TIME, UPDATE_TIME)
+         values (31 ,6, 31, 1, 0, 21,'0921-249', 249, now(), now(), now());
+
+     批次关联
+    USER_TASK_BATCH_ASSN
+
+       INSERT INTO USER_TASK_BATCH_ASSN (USER_TASK_ID, DISTRIBUTION_BATCH_ID, CREATE_TIME, CREATE_USER, STATUS) VALUES(485393, 20, NOW(), 1, 1);
+
+扫码传图
+    project-upload-photo-socket.js
+
+    cms
+        js-> socket
+    weixin 扫码
+        weixin-web : mq 发消息 -> cms-web
+        cms-web : 返回数据给js sorcket
+
+    com.clinks.cms.websocket.UploadPhotoSocketHandle
+    com.clinks.cms.util.UploadPhotoSocketMessage
+    com.clinks.cms.mqhandler.ProjectFollowUploadConsumer
+
+
+===================================================sql===================================================
+-- 主带看人
+    SELECT
+        b.`NAME` 主带看人, c.`NAME` 联系人,
+        CASE (c.`LEVEL`)
+            WHEN 1 THEN
+                'k类'
+            WHEN 4 THEN
+                'A类'
+            END AS 等级,
+     c.MOBILE_NO 号码, dsv.VISIT_TIME 带看时间
+    FROM `user` a
+    LEFT JOIN employee b ON a.EMPLOYEE_ID = b.ID AND b.`STATUS` = 1
+    LEFT JOIN demand_site_visit dsv ON dsv.VISIT_OWNERS = a.ID
+    LEFT JOIN demand_site_visit_contact dsvc ON dsvc.DEMAND_SITE_VISIT_ID = dsv.ID
+    LEFT JOIN contact c ON dsvc.CONTACT_ID = c.ID
+    WHERE dsv.VISIT_TIME > '2020-09-00'
+    AND dsv.VISIT_OWNERS IN (
+        SELECT a.ID FROM `user` a LEFT JOIN employee b ON a.EMPLOYEE_ID = b.ID
+        WHERE b.`STATUS` = 1 AND b.DEPARTMENT IN (11, 27, 36)
+    ) AND c.`LEVEL` IN (1, 4) AND dsv.`STATUS` != 0 ORDER BY a.ID;
+
+-- ka类带看协：
+    SELECT
+        a.ID, e.`NAME` 协助带看人, c.ID, c.`NAME`
+    FROM demand_site_visit a
+    LEFT JOIN demand_site_visit_sub_owner ds ON ds.DEMAND_SITE_VISIT_ID = a.ID
+    LEFT JOIN demand_site_visit_contact b ON a.ID = b.DEMAND_SITE_VISIT_ID
+    LEFT JOIN `user` u ON u.ID = ds.USER_ID
+    LEFT JOIN employee e ON e.ID = u.EMPLOYEE_ID
+    LEFT JOIN CONTACT c ON c.ID = b.CONTACT_ID
+    WHERE c.`LEVEL` IN (1, 4) AND a.`STATUS` != 0 AND a.VISIT_TIME > '2020-09-00'
+    AND u.ID IN (
+        SELECT a.ID FROM `user` a LEFT JOIN employee b ON a.EMPLOYEE_ID = b.ID
+        WHERE b.`STATUS` = 1 AND b.DEPARTMENT IN (11, 27, 36) ) ORDER BY u.ID;
+
+-- 拜访
+    SELECT b.`NAME` 经纪人, c.`NAME` 联系人,
+                CASE (c.`LEVEL`)
+                WHEN 1 THEN
+                    'k类'
+                WHEN 4 THEN
+                    'A类'
+                END AS 等级,
+                c.MOBILE_NO 号码, i.VISIT_START_DATE 拜访时间,
+                CASE (iua.TYPE)
+                WHEN 1 THEN
+                    '主拜访人'
+                WHEN 2 THEN
+                    '协助拜访人'
+                END AS 拜访人类型
+    FROM `user` a
+    LEFT JOIN employee b ON a.EMPLOYEE_ID = b.ID AND b.`STATUS` = 1
+    LEFT JOIN interview_user_assn iua ON iua.USER_ID = a.ID
+    LEFT JOIN interview i ON i.ID = iua.INTERVIEW_ID
+    LEFT JOIN interview_contact_assn ica ON ica.INTERVIEW_ID = i.ID
+    LEFT JOIN contact c ON c.ID = ica.CONTACT_ID
+    WHERE a.ID IN (
+            SELECT a.ID FROM `user` a LEFT JOIN employee b ON a.EMPLOYEE_ID = b.ID
+            WHERE b.`STATUS` = 1 AND b.DEPARTMENT IN (11, 27, 36))
+    AND i.VISIT_START_DATE > '2020-09-00' AND i.`STATUS` != 0 AND c.`LEVEL` IN (1, 4);
+
+-- 维护人
+    SELECT a.ID ,a.`NAME`, a.MOBILE_NO,e.`NAME` from contact a
+    left JOIN contact_maintain b ON a.ID = b.CONTACT_ID
+    LEFT JOIN `user` u ON u.ID = b.MAINTAIN_USER_ID
+    LEFT JOIN employee e ON e.ID = u.EMPLOYEE_ID
+    WHERE a.`LEVEL` in(1,4) AND a.CREATE_TIME > '2020-08-00'
+    and b.MAINTAIN_USER_ID in(
+    SELECT a.ID FROM `user` a
+    LEFT JOIN employee b ON a.EMPLOYEE_ID = b.ID WHERE b.`STATUS` =1 and b.DEPARTMENT in(11, 27, 36)
+     )
+    AND a.CREATE_USER in(SELECT a.ID FROM `user` a LEFT JOIN employee b ON a.EMPLOYEE_ID = b.ID WHERE b.`STATUS` =1 and
+     b.DEPARTMENT in(11, 27, 36));
+
+===================================================sql===================================================
