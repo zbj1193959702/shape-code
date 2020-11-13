@@ -50,6 +50,7 @@
 <jsp:include page="commonJs.jsp"/>
 
 <script>
+
     let vm = new Vue({
         el: '#customerInfo',
         data: function () {
