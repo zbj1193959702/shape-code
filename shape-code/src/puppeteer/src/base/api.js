@@ -28,6 +28,17 @@ const api = {
     productTitle: _path.promotion + 'post/58/changfang/title.do?projectId=',
     imageKnow: _path.promotion + 'post/recognize.do',
     saveCustomer: _path.localhost + 'customer/save?phone=',
+    scenicSpot: _path.localhost + 'scenicSpot/save',
+};
+
+
+const scenicSpot = async function (title, price, photoUrl, common) {
+    const param = {title, price, photoUrl, common};
+    let res = await rp.post({uri: api.scenicSpot, qs: param, json: true});
+    if (util._obj.isEmpty(res) || res.code !== '0') {
+        return null
+    }
+    return res.data
 };
 
 const saveCustomer = async function (phone) {
@@ -36,7 +47,7 @@ const saveCustomer = async function (phone) {
         return null
     }
     return res.data
-}
+};
 
 /**
  * 发帖配置数据
@@ -278,5 +289,6 @@ module.exports = {
         monitor,
         catPostTask,
         saveCustomer,
+        scenicSpot,
     },
 };

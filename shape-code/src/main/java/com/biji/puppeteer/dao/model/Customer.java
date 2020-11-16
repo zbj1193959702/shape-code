@@ -13,7 +13,7 @@ import java.util.Date;
 @TableName("customer")
 public class Customer {
 
-    @TableId(value = "ID", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     @TableField("phone")

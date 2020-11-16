@@ -229,16 +229,6 @@ public class BaseElasticService {
      * @since
      */
     public void deleteByQuery(String idxName, QueryBuilder builder) {
-
-        /**         solr
-         * obj                  data
-         *          ES
-         *
-         *       INDEX
-         *
-         *
-         *
-         */
         DeleteByQueryRequest request = new DeleteByQueryRequest(idxName);
         request.setQuery(builder);
         //设置批量操作数量,最大为10000
