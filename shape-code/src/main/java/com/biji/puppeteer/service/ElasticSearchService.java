@@ -1,5 +1,10 @@
 package com.biji.puppeteer.service;
 
+import com.biji.puppeteer.dao.model.EsScenicSpot;
+import com.biji.puppeteer.service.dto.LvmamaScenicSpotDTO;
+import com.biji.puppeteer.util.PageResult;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -7,24 +12,12 @@ import java.util.Map;
  * create by biji.zhao on 2020/11/12
  */
 public interface ElasticSearchService {
-    /**
-     * 添加数据
-     *
-     * @return
-     * @throws Exception
-     */
-    Boolean addData() throws Exception;
 
-    /**
-     * 搜索
-     *
-     * @param keyword
-     * @param pageNo
-     * @param pageSize
-     * @return
-     * @throws Exception
-     */
-    List<Map<String, Object>> searchData(String keyword, int pageNo, int pageSize) throws Exception;
+    void importLvmama() throws Exception;
+
+    void deleteAll();
+
+    PageResult<LvmamaScenicSpotDTO> queryScenicSpot(String text, Integer pageStart, Integer pageSize) throws IOException;
 
     /**
      * 删除索引

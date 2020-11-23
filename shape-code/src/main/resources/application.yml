@@ -34,4 +34,3 @@ mybatis-plus:
 elasticsearch:
   hostname: localhost   #elasticsearch服务器地址
   port: 9200                  #elasticsearch服务器端口
-  index: index

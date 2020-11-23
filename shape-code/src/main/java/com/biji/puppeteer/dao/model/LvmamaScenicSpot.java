@@ -27,10 +27,10 @@ public class LvmamaScenicSpot {
     @TableField("common")
     private String common;
 
-    @TableId(value = "create_time")
+    @TableField(value = "create_time")
     private Date createTime;
 
-    @TableId(value = "update_time")
+    @TableField(value = "update_time")
     private Date updateTime;
 
     public Integer getId() {

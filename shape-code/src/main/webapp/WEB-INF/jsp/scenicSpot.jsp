@@ -45,7 +45,6 @@
             </el-table-column>
             <el-table-column
                     align="center"
-                    prop="title"
                     label="标题">
             </el-table-column>
             <el-table-column
@@ -130,6 +129,15 @@
                         if (result.code === '0') {
                             vm.tableData = result.data.records;
                             vm.total = result.data.totalRecordCount;
+                            setTimeout(function () {
+                                // 表格内容被el-table转义
+                                for (let i = 0; i < vm.tableData.length; i++) {
+                                    let selector = '#scenicSpot > div.el-table.el-table--fit.el-table--border.el-table--enable-row-hover.el-table--enable-row-transition.el-table--small > div.el-table__body-wrapper.is-scrolling-none > table > tbody > tr:nth-child('+
+                                        (i+1) +') > td.el-table_1_column_2.is-center > div';
+                                    $(selector).html('');
+                                    $(selector).append(vm.tableData[i].title)
+                                }
+                            }, 300)
                         }
                     }
                 });

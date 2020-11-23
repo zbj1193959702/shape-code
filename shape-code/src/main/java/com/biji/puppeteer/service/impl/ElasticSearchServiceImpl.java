@@ -1,14 +1,19 @@
 package com.biji.puppeteer.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.biji.puppeteer.dao.mapper.ElasticSearchMapper;
-import com.biji.puppeteer.dao.model.ElasticSearchParams;
+import com.biji.puppeteer.dao.mapper.LvmamaScenicSpotMapper;
+import com.biji.puppeteer.dao.mapper.ScenicSpotEsMapper;
+import com.biji.puppeteer.dao.model.EsScenicSpot;
+import com.biji.puppeteer.dao.model.LvmamaScenicSpot;
 import com.biji.puppeteer.service.ElasticSearchService;
+import com.biji.puppeteer.service.dto.LvmamaScenicSpotDTO;
+import com.biji.puppeteer.util.DateUtil;
+import com.biji.puppeteer.util.PageResult;
+import com.biji.puppeteer.web.vo.LvmamaScenicSpotVO;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -18,21 +23,23 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.text.Text;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * create by biji.zhao on 2020/11/12
@@ -40,8 +47,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ElasticSearchServiceImpl implements ElasticSearchService {
 
-    @Value("${elasticsearch.index}")
-    private String index;
+    private static final String index = "test";
 
     @Autowired
     ElasticSearchMapper elasticSearchMapper;
@@ -49,55 +55,121 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
     @Autowired
     RestHighLevelClient restHighLevelClient;
 
+    @Autowired
+    LvmamaScenicSpotMapper lvmamaScenicSpotMapper;
+
+    @Autowired
+    ScenicSpotEsMapper scenicSpotEsMapper;
+
+    private static final String ik_index = "lvmama_scenic_spot";
+
     @Override
-    public Boolean addData() throws Exception {
-        List<ElasticSearchParams> params = elasticSearchMapper.getAllDataList();
-        GetIndexRequest getIndexRequest = new GetIndexRequest(index);
-        boolean exists = restHighLevelClient.indices()
-                .exists(getIndexRequest, RequestOptions.DEFAULT);
-        if (!exists) {
-            createIndex();
+    public void importLvmama() throws Exception {
+        List<LvmamaScenicSpot> scenicSpotList = lvmamaScenicSpotMapper.findAll();
+        // 如此创建的对象才能被分词
+        XContentBuilder builder = XContentFactory.jsonBuilder()
+                    .startObject()
+                        .field("properties")
+                            .startObject()
+                                .field("common")
+                                    .startObject()
+                                        .field("index", "true").field("type", "keyword")
+                                    .endObject()
+                                .field("title")
+                                    .startObject()
+                                        .field("index", "true").field("type", "text").field("analyzer", "ik_max_word")
+                                    .endObject()
+                            .endObject()
+                    .endObject();
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest(ik_index);
+            createIndexRequest.mapping(builder);
+            restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+
+        for (LvmamaScenicSpot s : scenicSpotList) {
+            IndexRequest indexRequest = new IndexRequest(ik_index);
+            String userJson = JSONObject.toJSONString(toVO(s));
+            indexRequest.source(userJson, XContentType.JSON);
+            restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
         }
-        BulkRequest bulkRequest = new BulkRequest();
-        bulkRequest.timeout(TimeValue.timeValueMinutes(5));
-        params.forEach(p ->
-                bulkRequest.add(new IndexRequest(index)
-                        .id(p.getId().toString())
-                        .source(JSON.toJSONString(p), XContentType.JSON)));
-        BulkResponse responses = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        return responses.hasFailures();
     }
 
-
+    private static LvmamaScenicSpotVO toVO(LvmamaScenicSpot model) {
+        if (model == null) {
+            return null;
+        }
+        LvmamaScenicSpotVO scenicSpotVO = new LvmamaScenicSpotVO();
+        scenicSpotVO.setId(model.getId());
+        scenicSpotVO.setTitle(model.getTitle());
+        scenicSpotVO.setPrice(model.getPrice());
+        scenicSpotVO.setPhotoUrl(model.getPhotoUrl());
+        scenicSpotVO.setCommon(model.getCommon());
+        scenicSpotVO.setCreateTime(DateUtil.formatDate(model.getCreateTime()));
+        scenicSpotVO.setUpdateTime(DateUtil.formatDate(model.getUpdateTime()));
+        return scenicSpotVO;
+    }
 
     @Override
-    public List<Map<String, Object>> searchData(String keyword, int pageNo, int pageSize) throws Exception {
-        SearchRequest searchRequest = new SearchRequest(index);
-        searchRequest.source(getSearchSourceBuilder(keyword, pageNo, pageSize));
+    public void deleteAll() {
+        scenicSpotEsMapper.deleteAll();
+    }
+
+    @Override
+    public PageResult<LvmamaScenicSpotDTO> queryScenicSpot(String title, Integer pageStart, Integer pageSize) throws IOException {
+        SearchRequest searchRequest = new SearchRequest(ik_index);
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery("title", title);
+
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("title").preTags("<font color='red'>").postTags("</font>");
+        searchSourceBuilder.query(queryBuilder);
+
+        searchSourceBuilder.highlighter(highlightBuilder);
+        searchRequest.source(searchSourceBuilder);
+
         SearchResponse response = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
 
-        List<Map<String, Object>> resultList = Lists.newArrayList();
-
-        Lists.newArrayList(response.getHits().getHits()).forEach(filed -> {
-            Map<String, HighlightField> highlightFields = filed.getHighlightFields();
-            HighlightField title = highlightFields.get("title");
-            HighlightField content = highlightFields.get("content");
-
-            Map<String, Object> one = Maps.newHashMap();
-            if (title != null) {
-                StringBuilder titleBuilder = new StringBuilder();
-                Lists.newArrayList(title.fragments()).forEach(e -> titleBuilder.append(e.toString()));
-                one.put("title", titleBuilder.toString());
+        SearchHit[] hits = response.getHits().getHits();
+        List<EsScenicSpot> scenicSpots = Lists.newArrayList();
+        for (SearchHit hit : hits) {
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            HighlightField productName = highlightFields.get("title");
+            StringBuilder newName = new StringBuilder();
+            if (productName != null){
+                //获取该高亮字段的高亮信息
+                Text[] fragments = productName.getFragments();
+                //将前缀、关键词、后缀进行拼接
+                for (Text fragment : fragments) {
+                    newName.append(fragment);
+                }
             }
-            if (content != null) {
-                StringBuilder contentBuilder = new StringBuilder();
-                Lists.newArrayList(content.fragments()).forEach(e -> contentBuilder.append(e.toString()));
-                one.put("content", contentBuilder.toString());
-            }
-            resultList.add(one);
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            sourceAsMap.put("title", newName.toString());
+            String json = JSON.toJSONString(sourceAsMap);
+            EsScenicSpot esScenicSpot = JSON.parseObject(json, EsScenicSpot.class);
+            scenicSpots.add(esScenicSpot);
+        }
+        PageResult<LvmamaScenicSpotDTO> result = new PageResult<>();
+        result.setTotalRecordCount(Math.toIntExact(response.getHits().getTotalHits().value));
+        result.setRecords(Lists.newArrayList(scenicSpots.stream()
+                .map(ElasticSearchServiceImpl::toScenicSpot).collect(Collectors.toList())));
+        return result;
+    }
 
-        });
-        return resultList;
+    private static LvmamaScenicSpotDTO toScenicSpot(EsScenicSpot esScenicSpot) {
+        if (esScenicSpot == null) {
+            return null;
+        }
+        LvmamaScenicSpotDTO lvmamaScenicSpotDTO = new LvmamaScenicSpotDTO();
+        lvmamaScenicSpotDTO.setId(Math.toIntExact(esScenicSpot.getId()));
+        lvmamaScenicSpotDTO.setTitle(esScenicSpot.getTitle());
+        lvmamaScenicSpotDTO.setPrice(esScenicSpot.getPrice());
+        lvmamaScenicSpotDTO.setPhotoUrl(esScenicSpot.getPhotoUrl());
+        lvmamaScenicSpotDTO.setCommon(esScenicSpot.getCommon());
+        lvmamaScenicSpotDTO.setCreateTime(DateUtil.parseDate(esScenicSpot.getCreateTime()));
+        lvmamaScenicSpotDTO.setUpdateTime(DateUtil.parseDate(esScenicSpot.getUpdateTime()));
+        return lvmamaScenicSpotDTO;
     }
 
     @Override
@@ -108,7 +180,8 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
 
     @Override
     public Boolean searchIndex() throws Exception {
-        return restHighLevelClient.indices().exists(new GetIndexRequest(index), RequestOptions.DEFAULT);
+        return restHighLevelClient.indices()
+                .exists(new GetIndexRequest(index), RequestOptions.DEFAULT);
     }
 
     @Override
@@ -159,27 +232,5 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         CreateIndexResponse createIndexResponse = restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
 
         return createIndexResponse.index();
-    }
-
-    private static SearchSourceBuilder getSearchSourceBuilder(String keyword, int pageNo, int pageSize) {
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.from(pageNo -1);
-        searchSourceBuilder.size(pageSize);
-        MultiMatchQueryBuilder multiMatchQueryBuilder =
-                QueryBuilders.multiMatchQuery(keyword, "title", "content").field("title", 10);
-        searchSourceBuilder.query(multiMatchQueryBuilder);
-        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-        searchSourceBuilder.highlighter(getHighlightBuilder());
-        return searchSourceBuilder;
-    }
-
-    private static HighlightBuilder getHighlightBuilder() {
-        HighlightBuilder highlightBuilder = new HighlightBuilder();
-        highlightBuilder.fields().add(new HighlightBuilder.Field("title"));
-        highlightBuilder.fields().add(new HighlightBuilder.Field("content"));
-        highlightBuilder.requireFieldMatch(false);
-        highlightBuilder.preTags("<span style=\"color=red\">");
-        highlightBuilder.postTags("</span>");
-        return highlightBuilder;
     }
 }

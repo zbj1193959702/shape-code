@@ -1,0 +1,27 @@
+{
+  "article": {
+    "properties": {
+      "id": {
+        "type": "long"
+      },
+      "price": {
+        "type": "integer"
+      },
+      "title": {
+        "type": "text"
+      },
+      "common": {
+        "type": "text"
+      },
+      "createTime": {
+        "type": "keyword"
+      },
+      "updateTime": {
+        "type": "keyword"
+      },
+      "photoUrl": {
+        "type": "keyword"
+      }
+    }
+  }
+}

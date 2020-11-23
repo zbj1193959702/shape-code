@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.biji.puppeteer.dao.mapper.LvmamaScenicSpotMapper">
+
+    <resultMap id="base_result" type="com.biji.puppeteer.dao.model.LvmamaScenicSpot">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="photo_url" property="photoUrl" />
+        <result column="photo_url" property="photoUrl" />
+        <result column="common" property="common" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <sql id="base_column">
+         id, title, price, photo_url, common, create_time, update_time
+    </sql>
+
+    <select id="findAll" resultType="com.biji.puppeteer.dao.model.LvmamaScenicSpot">
+        SELECT <include refid="base_column"/>
+        from lvmama_scenic_spot
+    </select>
+
+</mapper>
