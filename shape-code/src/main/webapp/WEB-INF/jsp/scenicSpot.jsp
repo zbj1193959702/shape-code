@@ -34,6 +34,11 @@
             <el-form-item>
                 <el-button type="primary" @click="queryList(1)">查询</el-button>
             </el-form-item>
+            <el-form-item>
+                <el-button type="text">{{time}}</el-button>
+                <el-button type="primary" @click="startWorker()">开始</el-button>
+                <el-button type="primary" @click="stopTime()">停止</el-button>
+            </el-form-item>
         </el-form>
         <el-table align="center" size="small"
                 :data="tableData" border
@@ -95,7 +100,8 @@
                     title: null,
                     common: null,
                     maxPrice: null,
-                }
+                },
+                time : null,
             };
         },
         created: function () {
@@ -105,6 +111,12 @@
             this.queryList(1);
         },
         methods: {
+            startWorker() {
+              startWorker();
+            },
+            stopTime(){
+                stopTime();
+            },
             handleSizeChange() {
             },
             currentChange: function (currentPage) {
@@ -144,6 +156,27 @@
             }
         }
     });
+
+    var worker;
+
+    function startWorker() {
+        if(typeof(Worker)!=="undefined") {
+            if(typeof(worker) == "undefined") {
+                worker = new Worker("../../../js/workerTime.js");
+            }
+            worker.onmessage = function (event) {
+                vm.time = event.data;
+            };
+        } else {
+            vm.time = "Sorry, your browser does not support Web Workers...";
+        }
+    }
+
+    function stopTime() {
+        if (worker !== undefined) {
+            worker.terminate();
+        }
+    }
 
 </script>
 </body>
