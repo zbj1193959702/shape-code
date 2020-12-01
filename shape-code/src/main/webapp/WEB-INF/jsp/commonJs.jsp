@@ -3,3 +3,6 @@
 
 <script src="http://outter-common.toodc.cn/static-source/vue_2.6.11.js"></script>
 <script src="http://outter-common.toodc.cn/static-source/lib-index_2.13.0.js"></script>
+
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>

@@ -16,6 +16,22 @@
         text-align: center;
         margin-bottom: 50px
     }
+
+    .node circle {
+        fill: yellow;
+        stroke: red;
+        stroke-width: 1.5px;
+    }
+
+    .node {
+        font: 13px sans-serif;
+    }
+
+    .link {
+        fill: none;
+        stroke: rgba(48, 196, 200, 0.75);
+        stroke-width: 1.5px;
+    }
 </style>
 <body>
 
@@ -31,13 +47,28 @@
             <el-form-item label="最高价格">
                 <el-input v-model="query.maxPrice" placeholder="最高价格"></el-input>
             </el-form-item>
-            <el-form-item>
-                <el-button type="primary" @click="queryList(1)">查询</el-button>
+        </el-form>
+        <el-form style="margin-left: 50px;" :inline="true" >
+            <el-form-item label="区域">
+                <el-col :span="8">
+                    <el-select v-model="query.provinceCode" placeholder="省" @change="selProvince">
+                        <el-option v-for="item in provinceList" :label="item.name" :value="item.regionCode" :key="item.regionCode"></el-option>
+                    </el-select>
+                </el-col>
+                <el-col :span="8">
+                    <el-select v-model="query.cityCode" placeholder="市" @change="selCity">
+                        <el-option v-for="item in cityList" :label="item.name" :value="item.regionCode" :key="item.regionCode"></el-option>
+                    </el-select>
+                </el-col>
+                <el-col :span="8">
+                    <el-select v-model="query.districtCode" placeholder="区">
+                        <el-option v-for="item in districtList" :label="item.name" :value="item.regionCode" :key="item.regionCode"></el-option>
+                    </el-select>
+                </el-col>
             </el-form-item>
             <el-form-item>
-                <el-button type="text">{{time}}</el-button>
-                <el-button type="primary" @click="startWorker()">开始</el-button>
-                <el-button type="primary" @click="stopTime()">停止</el-button>
+                <el-button type="primary" @click="queryList(1)">查询</el-button>
+                <el-button type="primary" @click="regionTree()">区域</el-button>
             </el-form-item>
         </el-form>
         <el-table align="center" size="small"
@@ -45,7 +76,7 @@
                 style="width: 90%;margin-left: 50px;">
             <el-table-column align="center"label="状态">
                 <template slot-scope="scope">
-                    <img width="230px" height="160px" :src="scope.row.photoUrl"/>
+                    <img width="230px" @click="bigPhoto(scope.row.photoUrl)" height="160px" :src="scope.row.photoUrl"/>
                 </template>
             </el-table-column>
             <el-table-column
@@ -80,10 +111,34 @@
                 :current-page="currentPage"
                 background>
         </el-pagination>
+
+        <el-dialog :visible.sync="bigImageDialog" :before-close="bigImageClose">
+            <div style="padding-top: 5px;margin-bottom: 5px">
+                <i class="el-icon-zoom-in" @click="imgW=imgW+200"></i>
+                <i class="el-icon-zoom-out" @click="imgW=imgW-100"></i>
+            </div>
+            <div>
+                <img :src="bigImageUrl" :style="{height:imgW+'px'}" style="text-align: center;">
+            </div>
+        </el-dialog>
+
+        <el-dialog
+                title="区域分析"
+                :visible.sync="visible.treeVisible"
+                width="85%"
+                :before-close="treeClose">
+            <div id="regionalAnalyze" style="text-align: center">
+
+            </div>
+        </el-dialog>
+
     </template>
+
 </div>
 
 <jsp:include page="commonJs.jsp"/>
+
+<script type="text/javascript" src="${webPath}/js/region.js"></script>
 
 <script>
 
@@ -100,17 +155,83 @@
                     title: null,
                     common: null,
                     maxPrice: null,
+                    provinceCode: null,
+                    cityCode: null,
+                    districtCode: null,
                 },
+                provinceList: [],
+                cityList: [],
+                districtList: [],
                 time : null,
+                bigImageDialog: false,
+                imgW: 500,
+                bigImageUrl: null,
+                visible:{
+                    treeVisible: false,
+                }
             };
         },
         created: function () {
-
+            $.ajax({
+                type: 'GET',
+                url: _path + '/region/provinceList',
+                success: function (result) {
+                    if (result.code === '0') {
+                        vm.provinceList = result.data;
+                    }
+                }
+            });
         },
         mounted:function() {
             this.queryList(1);
         },
         methods: {
+            regionTree() {
+                initTree();
+            },
+            treeClose() {
+                this.visible.treeVisible = false;
+            },
+            bigImageClose() {
+                this.imgW =  500;
+                this.bigImageDialog = false;
+            },
+            bigPhoto(url) {
+                this.bigImageDialog = true;
+                this.bigImageUrl = url;
+            },
+            selProvince(regionCode) {
+                this.query.provinceCode = regionCode;
+                let code = this.query.provinceCode;
+                $.ajax({
+                    type: 'POST',
+                    url: _path + '/region/getChildren',
+                    data: {
+                        code : code
+                    },
+                    success: function (result) {
+                        if (result.code === '0') {
+                            vm.cityList = result.data;
+                        }
+                    }
+                });
+            },
+            selCity(regionCode) {
+                this.query.cityCode = regionCode;
+                let code = this.query.cityCode;
+                $.ajax({
+                    type: 'POST',
+                    url: _path + '/region/getChildren',
+                    data: {
+                        code : code
+                    },
+                    success: function (result) {
+                        if (result.code === '0') {
+                            vm.districtList = result.data;
+                        }
+                    }
+                });
+            },
             startWorker() {
               startWorker();
             },

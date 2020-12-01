@@ -119,6 +119,9 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
+        searchSourceBuilder.from(pageStart);
+        searchSourceBuilder.size(pageSize);
+
         QueryBuilder queryBuilder = QueryBuilders.matchQuery("title", title);
 
         HighlightBuilder highlightBuilder = new HighlightBuilder();

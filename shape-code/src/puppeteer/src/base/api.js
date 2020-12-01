@@ -29,6 +29,7 @@ const api = {
     imageKnow: _path.promotion + 'post/recognize.do',
     saveCustomer: _path.localhost + 'customer/save?phone=',
     scenicSpot: _path.localhost + 'scenicSpot/save',
+    saveHouse:  _path.localhost + 'house/saveOne',
 };
 
 
@@ -39,6 +40,11 @@ const scenicSpot = async function (title, price, photoUrl, common) {
         return null
     }
     return res.data
+};
+
+const saveHouse = async function (title, detailUrl, address, firstImage, norms, price) {
+    const param = {title, detailUrl, address, firstImage, norms, price};
+    await rp.post({uri: api.saveHouse, qs: param, json: true});
 };
 
 const saveCustomer = async function (phone) {
@@ -290,5 +296,6 @@ module.exports = {
         catPostTask,
         saveCustomer,
         scenicSpot,
+        saveHouse,
     },
 };
